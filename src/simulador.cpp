@@ -1,28 +1,27 @@
-// src/simulator.cpp
-#include "simulator.h"
+#include "simulador.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <sstream>
 
-void simulate(const std::string& objFile) {
-    std::ifstream in(objFile);
+void simular(const std::string& arquivoObj) {
+    std::ifstream in(arquivoObj);
     if (!in.is_open()) {
-        std::cerr << "Erro ao abrir: " << objFile << std::endl;
+        std::cerr << "Erro ao abrir: " << arquivoObj << std::endl;
         return;
     }
 
-    // 🧠 CARREGADOR: lê o .obj e coloca na "memória" (vetor)
+    // lê o .obj e coloca na "memória" (vetor)
     std::vector<int> memory;
     int val;
     while (in >> val) memory.push_back(val);
     in.close();
 
-    // 🧠 REGISTRADORES
+    // REGISTRADORES
     int PC  = 0; // Program Counter
     int ACC = 0; // Acumulador
 
-    // 🧠 CICLO BUSCA-DECODIFICA-EXECUTA
+    // CICLO BUSCA-DECODIFICA-EXECUTA
     while (PC < (int)memory.size()) {
         int opcode = memory[PC];
 
@@ -33,7 +32,7 @@ void simulate(const std::string& objFile) {
             case 2: // SUB
                 ACC -= memory[memory[PC + 1]];
                 PC += 2; break;
-            case 3: // MUL
+            case 3: // MULT
                 ACC *= memory[memory[PC + 1]];
                 PC += 2; break;
             case 4: // DIV

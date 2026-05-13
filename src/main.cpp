@@ -1,19 +1,18 @@
-// src/main.cpp
 #include <iostream>
 #include <string>
-#include "preprocessor.h"
-#include "assembler.h"
-#include "simulator.h"
+#include "preprocessador.h"
+#include "montador.h"
+#include "simulador.h"
 
-std::string getExtension(const std::string& filename) {
-    size_t pos = filename.rfind('.');
+std::string getExtensao(const std::string& arquivo) {
+    size_t pos = arquivo.rfind('.');
     if (pos == std::string::npos) return "";
-    return filename.substr(pos); // retorna ".asm", ".pre" ou ".obj"
+    return arquivo.substr(pos); // retorna ".asm", ".pre" ou ".obj"
 }
 
-std::string getBaseName(const std::string& filename) {
-    size_t pos = filename.rfind('.');
-    return filename.substr(0, pos); // retorna "myfile"
+std::string getName(const std::string& arquivo) {
+    size_t pos = arquivo.rfind('.');
+    return arquivo.substr(0, pos); // retorna "myfile"
 }
 
 int main(int argc, char* argv[]) {
@@ -22,16 +21,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::string inputFile = argv[1];
-    std::string ext = getExtension(inputFile);
-    std::string base = getBaseName(inputFile);
+    std::string arquivoEntrada = argv[1];
+    std::string ext = getExtensao(arquivoEntrada);
+    std::string base = getName(arquivoEntrada);
 
     if (ext == ".asm") {
-        preprocess(inputFile, base + ".pre");
+        preprocessar(arquivoEntrada, base + ".pre");
     } else if (ext == ".pre") {
-        assemble(inputFile, base + ".obj", base + ".pen");
+        montar(arquivoEntrada, base + ".obj", base + ".pen");
     } else if (ext == ".obj") {
-        simulate(inputFile);
+        simular(arquivoEntrada);
     } else {
         std::cerr << "Extensão não reconhecida: " << ext << std::endl;
         return 1;

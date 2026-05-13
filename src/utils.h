@@ -18,12 +18,12 @@ inline std::vector<std::string> tokenize(const std::string& line) {
     return tokens;
 }
 
-inline std::string removeComment(const std::string& line) {
+inline std::string removerComentario(const std::string& line) {
     size_t pos = line.find(';');
     return (pos != std::string::npos) ? line.substr(0, pos) : line;
 }
 
-inline std::string normalizeSpaces(const std::string& line) {
+inline std::string normalizarEspacos(const std::string& line) {
     std::string result;
     bool lastWasSpace = false;
     for (char c : line) {
@@ -42,13 +42,13 @@ inline std::string normalizeSpaces(const std::string& line) {
     return result;
 }
 
-inline std::string stripColon(const std::string& s) {
+inline std::string retirarDoisPontos(const std::string& s) {
     if (!s.empty() && s.back() == ':')
         return s.substr(0, s.size() - 1);
     return s;
 }
 
-inline int parseValue(const std::string& s) {
+inline int interpretarValor(const std::string& s) {
     if (s.size() > 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
         return std::stoi(s, nullptr, 16);
     return std::stoi(s);

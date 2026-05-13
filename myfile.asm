@@ -1,24 +1,49 @@
 ; Programa: encontra o maior entre dois numeros
+; programa com minúsculas, comentários, tabulações, espaços etc para mostrar o funcionamento do .pre
 
-MAIOR equ 1      ; flag para ativar debug
-DEBUG equ 0      ; debug desativado
 
-section text     ; inicio da secao de codigo
-input a          ; le primeiro numero
-input b          ; le segundo numero
-load a           ; carrega a no acumulador
-sub b            ; subtrai b
-jmpn bmaior      ; se negativo, b eh maior
-if MAIOR
-output a         ; saida: a eh maior ou igual
-jmp fim          ; pula para o fim
-bmaior:
-output b         ; saida: b eh maior
+MaIoR    EQU     1
+DEBUG equ 0
+
+SECTION TEXT
+
+    input     a        ; lendo A
+INPUT	b                ; tabulação
+
+load a
+SuB     b
+
+jmpn     bMaior
+
+IF MAIOR
+    output a      ; A maior
+
+jmp fim
+
+; label separado da instrução
+bMaior:
+    
+    OUTPUT      b
+
 fim:
-stop             ; encerra
+    stop
 
-section data     ; inicio da secao de dados
-a:               ; rotulo sozinho na linha
-space            ; reserva espaco para a
-b:               ; rotulo sozinho na linha
-space            ; reserva espaco para b
+
+SECTION DATA
+
+a: ; comentario no label
+    space
+
+b:
+	SPACE
+
+temp:
+    const 10
+
+; teste do copy sem espaço
+buffer1: space
+buffer2: space
+
+SECTION TEXT
+
+copy buffer1,buffer2

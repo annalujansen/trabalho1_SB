@@ -1,5 +1,4 @@
-// src/preprocessor.cpp
-#include "preprocessor.h"
+#include "preprocessador.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -12,32 +11,30 @@
 
 // ── pré-processador principal ───────────────────────────────────────
 
-void preprocess(const std::string& inputFile, const std::string& outputFile) {
-    std::ifstream in(inputFile);
+void preprocessar(const std::string& arquivoEntrada, const std::string& arquivoSaida) {
+    std::ifstream in(arquivoEntrada);
     if (!in.is_open()) {
-        std::cerr << "Erro ao abrir: " << inputFile << std::endl;
+        std::cerr << "Erro ao abrir: " << arquivoEntrada << std::endl;
         return;
     }
 
-    // PASSO 1: lê todas as linhas, remove comentários, converte para maiúsculas
+    // lê todas as linhas, remove comentários, converte para maiúsculas
     std::vector<std::string> lines;
     std::string line;
     while (std::getline(in, line)) {
-        line = toUpper(removeComment(line));
-        line = normalizeSpaces(line);
+        line = toUpper(removerComentario(line));
+        line = normalizarEspacos(line);
         if (!line.empty())
             lines.push_back(line);
     }
     in.close();
 
-    // PASSO 2: resolve EQU — monta tabela de substituições
-    // EQU deve estar nas primeiras linhas do código
+    // resolve EQU — monta tabela de substituições
     std::map<std::string, std::string> equTable;
     std::vector<std::string> afterEqu;
 
     for (const std::string& l : lines) {
         auto tokens = tokenize(l);
-        // Formato: ROTULO EQU VALOR
         if (tokens.size() == 3 && tokens[1] == "EQU") {
             equTable[tokens[0]] = tokens[2];
         } else {
@@ -45,7 +42,7 @@ void preprocess(const std::string& inputFile, const std::string& outputFile) {
         }
     }
 
-    // PASSO 3: aplica substituições EQU e resolve IF
+    // aplica substituições EQU e resolve IF
     std::vector<std::string> afterIf;
     for (size_t i = 0; i < afterEqu.size(); i++) {
         auto tokens = tokenize(afterEqu[i]);
@@ -72,7 +69,7 @@ void preprocess(const std::string& inputFile, const std::string& outputFile) {
         }
     }
 
-    // PASSO 4: trata rótulo sozinho na linha (rótulo: + ENTER)
+    // trata rótulo sozinho na linha (rótulo: + ENTER)
     // Une o rótulo com a linha seguinte
     std::vector<std::string> afterLabel;
     for (size_t i = 0; i < afterIf.size(); i++) {
@@ -86,7 +83,7 @@ void preprocess(const std::string& inputFile, const std::string& outputFile) {
         }
     }
 
-    // PASSO 5: separa seções TEXT e DATA
+    // separa seções TEXT e DATA
     std::vector<std::string> textSection, dataSection;
     bool inData = false;
 
@@ -111,11 +108,11 @@ void preprocess(const std::string& inputFile, const std::string& outputFile) {
             textSection.push_back(l);
     }
 
-    // PASSO 6: escreve saída — TEXT sempre antes de DATA
-    std::ofstream out(outputFile);
+    // escreve saída — TEXT sempre antes de DATA
+    std::ofstream out(arquivoSaida);
     for (const std::string& l : textSection) out << l << "\n";
     for (const std::string& l : dataSection) out << l << "\n";
     out.close();
 
-    std::cout << "Pré-processamento concluído: " << outputFile << std::endl;
+    std::cout << "Pré-processamento concluído: " << arquivoSaida << std::endl;
 }

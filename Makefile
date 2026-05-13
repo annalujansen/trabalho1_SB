@@ -1,6 +1,6 @@
 CXX = g++-15
 CXXFLAGS = -std=c++17 -Wall
-SRC = src/main.cpp src/preprocessor.cpp src/assembler.cpp src/simulator.cpp
+SRC = src/main.cpp src/preprocessador.cpp src/montador.cpp src/simulador.cpp
 TARGET = montador
 
 all:

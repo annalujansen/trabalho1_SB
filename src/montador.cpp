@@ -1,5 +1,4 @@
-// src/assembler.cpp
-#include "assembler.h"
+#include "montador.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -30,10 +29,6 @@ std::map<std::string, InstrInfo> instrTable = {
 };
 
 // ── PASSAGEM 1: constrói tabela de símbolos ──────────────────────────
-//
-// 🧠 CONCEITO: Percorre o arquivo SEM gerar código.
-//    Registra cada rótulo e seu endereço na tabela de símbolos.
-//    Resolve o "forward reference problem".
 
 void firstPass(const std::vector<std::string>& lines,
                std::map<std::string, int>& symbolTable) {
@@ -47,7 +42,7 @@ void firstPass(const std::vector<std::string>& lines,
         std::string label = "";
 
         if (tokens[idx].back() == ':') {
-            label = stripColon(tokens[idx]);
+            label = retirarDoisPontos(tokens[idx]);
             if (symbolTable.count(label)) {
                 std::cerr << "ERRO: símbolo redefinido: " << label << std::endl;
             } else {
@@ -63,7 +58,7 @@ void firstPass(const std::vector<std::string>& lines,
         if (op == "SPACE") {
             int size = 1;
             if (idx + 1 < (int)tokens.size())
-                size = parseValue(tokens[idx + 1]);
+                size = interpretarValor(tokens[idx + 1]);
             locationCounter += size;
         } else if (op == "CONST") {
             locationCounter += 1;
@@ -74,9 +69,6 @@ void firstPass(const std::vector<std::string>& lines,
 }
 
 // ── PASSAGEM 2: gera código de máquina (.obj) ───────────────────────
-//
-// 🧠 CONCEITO: Com a tabela de símbolos completa, substitui cada
-//    rótulo-operando pelo seu endereço real.
 
 std::vector<int> secondPass(const std::vector<std::string>& lines,
                             const std::map<std::string, int>& symbolTable) {
@@ -100,11 +92,11 @@ std::vector<int> secondPass(const std::vector<std::string>& lines,
         if (op == "SPACE") {
             int size = 1;
             if (idx + 1 < (int)tokens.size())
-                size = parseValue(tokens[idx + 1]);
+                size = interpretarValor(tokens[idx + 1]);
             for (int i = 0; i < size; i++)
                 machineCode.push_back(0);
         } else if (op == "CONST") {
-            machineCode.push_back(parseValue(tokens[idx + 1]));
+            machineCode.push_back(interpretarValor(tokens[idx + 1]));
         } else if (instrTable.count(op)) {
             InstrInfo info = instrTable[op];
             machineCode.push_back(info.opcode);
@@ -137,12 +129,6 @@ std::vector<int> secondPass(const std::vector<std::string>& lines,
 }
 
 // ── PASSAGEM ÚNICA: gera .pen ────────────────────────────────────────
-//
-// 🧠 CONCEITO: Simula um montador de passagem única.
-//    Processa linha a linha mantendo uma tabela parcial.
-//    Símbolos já vistos são resolvidos imediatamente.
-//    Símbolos ainda não definidos viram ?ROTULO (pendência).
-//    Isso ilustra por que a passagem única é mais complexa.
 
 std::vector<std::string> singlePass(const std::vector<std::string>& lines) {
     std::vector<std::string> penCode;
@@ -157,7 +143,7 @@ std::vector<std::string> singlePass(const std::vector<std::string>& lines) {
 
         // Registra rótulo na tabela parcial AGORA (no momento em que é visto)
         if (tokens[idx].back() == ':') {
-            std::string label = stripColon(tokens[idx]);
+            std::string label = retirarDoisPontos(tokens[idx]);
             partialTable[label] = locationCounter;
             idx++;
             if (idx >= (int)tokens.size()) continue;
@@ -169,13 +155,13 @@ std::vector<std::string> singlePass(const std::vector<std::string>& lines) {
         if (op == "SPACE") {
             int size = 1;
             if (idx + 1 < (int)tokens.size())
-                size = parseValue(tokens[idx + 1]);
+                size = interpretarValor(tokens[idx + 1]);
             for (int i = 0; i < size; i++) {
                 penCode.push_back("00");
                 locationCounter++;
             }
         } else if (op == "CONST") {
-            int val = parseValue(tokens[idx + 1]);
+            int val = interpretarValor(tokens[idx + 1]);
             penCode.push_back(std::to_string(val));
             locationCounter++;
         } else if (instrTable.count(op)) {
@@ -190,10 +176,10 @@ std::vector<std::string> singlePass(const std::vector<std::string>& lines) {
                 std::string op2 = operands.substr(comma + 1);
                 for (const std::string& operand : {op1, op2}) {
                     if (partialTable.count(operand)) {
-                        // 🧠 Já conhecido — resolve agora
+                        // conhecido — resolve agora
                         penCode.push_back(std::to_string(partialTable.at(operand)));
                     } else {
-                        // 🧠 Ainda desconhecido — pendência!
+                        // desconhecido — pendência
                         penCode.push_back("?" + operand);
                     }
                     locationCounter++;
@@ -201,10 +187,10 @@ std::vector<std::string> singlePass(const std::vector<std::string>& lines) {
             } else if (info.numOperands == 1) {
                 std::string operand = tokens[idx + 1];
                 if (partialTable.count(operand)) {
-                    // 🧠 Já conhecido — resolve agora
+                    // conhecido — resolve agora
                     penCode.push_back(std::to_string(partialTable.at(operand)));
                 } else {
-                    // 🧠 Ainda desconhecido — pendência!
+                    // desconhecido — pendência
                     penCode.push_back("?" + operand);
                 }
                 locationCounter++;
@@ -215,12 +201,12 @@ std::vector<std::string> singlePass(const std::vector<std::string>& lines) {
 }
 
 // ── função principal do montador ────────────────────────────────────
-void assemble(const std::string& inputFile,
-              const std::string& objFile,
-              const std::string& penFile) {
-    std::ifstream in(inputFile);
+void montar(const std::string& arquivoEntrada,
+              const std::string& arquivoObj,
+              const std::string& arquivoPen) {
+    std::ifstream in(arquivoEntrada);
     if (!in.is_open()) {
-        std::cerr << "Erro ao abrir: " << inputFile << std::endl;
+        std::cerr << "Erro ao abrir: " << arquivoEntrada << std::endl;
         return;
     }
 
@@ -241,7 +227,7 @@ void assemble(const std::string& inputFile,
     // Passagem 2: gera .obj com todos os endereços resolvidos
     std::vector<int> machineCode = secondPass(lines, symbolTable);
 
-    std::ofstream obj(objFile);
+    std::ofstream obj(arquivoObj);
     for (size_t i = 0; i < machineCode.size(); i++) {
         if (i > 0) obj << " ";
         obj << machineCode[i];
@@ -252,7 +238,7 @@ void assemble(const std::string& inputFile,
     // Passagem única: gera .pen com pendências não resolvidas
     std::vector<std::string> penCode = singlePass(lines);
 
-    std::ofstream pen(penFile);
+    std::ofstream pen(arquivoPen);
     for (size_t i = 0; i < penCode.size(); i++) {
         if (i > 0) pen << " ";
         pen << penCode[i];
@@ -260,5 +246,5 @@ void assemble(const std::string& inputFile,
     pen << "\n";
     pen.close();
 
-    std::cout << "Montagem concluída: " << objFile << " e " << penFile << std::endl;
+    std::cout << "Montagem concluída: " << arquivoObj << " e " << arquivoPen << std::endl;
 }
