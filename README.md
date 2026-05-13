@@ -108,15 +108,15 @@ Simula a execução do programa:
 ```
 SB/
 ├── src/
-│   ├── main.cpp          # roteador de modos (.asm/.pre/.obj)
-│   ├── preprocessor.cpp  # pré-processamento: EQU, IF, normalização
-│   ├── preprocessor.h
-│   ├── assembler.cpp     # montagem: duas passagens + tabela de símbolos
-│   ├── assembler.h
-│   ├── simulator.cpp     # simulador: carregador + ciclo busca-executa
-│   ├── simulator.h
-│   └── utils.h           # funções compartilhadas: tokenize, toUpper, etc.
-├── myfile.asm            # programa principal de teste
+│   ├── main.cpp            # roteador de modos (.asm/.pre/.obj)
+│   ├── montador.cpp        # montagem: duas passagens + tabela de símbolos
+│   ├── montador.h
+│   ├── preprocessador.cpp  # pré-processamento: EQU, IF, normalização
+│   ├── preprocessador.h
+│   ├── simulador.cpp       # simulador: carregador + ciclo busca-executa
+│   ├── simulador.h
+│   └── utils.h             # funções compartilhadas: tokenize, toUpper, etc.
+├── myfile.asm              # programa principal de teste
 ├── Makefile
 └── README.md
 ```

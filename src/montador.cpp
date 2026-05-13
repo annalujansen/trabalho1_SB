@@ -220,10 +220,6 @@ void montar(const std::string& arquivoEntrada,
     std::map<std::string, int> symbolTable;
     firstPass(lines, symbolTable);
 
-    std::cout << "=== Tabela de Símbolos ===" << std::endl;
-    for (auto& [sym, addr] : symbolTable)
-        std::cout << "  " << sym << " -> " << addr << std::endl;
-
     // Passagem 2: gera .obj com todos os endereços resolvidos
     std::vector<int> machineCode = secondPass(lines, symbolTable);
 
