@@ -67,9 +67,9 @@ Simula a execução do programa:
 ## Exemplo de Uso Completo
 
 ```bash
-./montador tests/myfile.asm   # gera myfile.pre
-./montador tests/myfile.pre   # gera myfile.obj e myfile.pen
-./montador tests/myfile.obj   # simula o programa
+./montador myfile.asm   # gera myfile.pre
+./montador myfile.pre   # gera myfile.obj e myfile.pen
+./montador myfile.obj   # simula o programa
 ```
 
 ---
